@@ -1,0 +1,48 @@
+kaggle.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+*.venv/
+.venv*/
+.venv_wsl/
+venv/
+ENV/
+env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+*.whl
+
+# Pytest
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+
+# ruff
+.ruff_cache/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# Redis and DB sockets
+*.sock
+
+# OS files
+.DS_Store
+Thumbs.db
