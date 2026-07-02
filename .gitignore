@@ -4,6 +4,7 @@ kaggle.json
 __pycache__/
 *.py[cod]
 *$py.class
+.ipynb_checkpoints/
 
 # Virtual environments
 .venv/
@@ -46,3 +47,6 @@ dist/
 # OS files
 .DS_Store
 Thumbs.db
+
+# ML ENV
+models/*.joblib

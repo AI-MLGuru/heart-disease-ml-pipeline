@@ -1,223 +1,41 @@
-## Import Libaries
-import numpy as np
-import pandas as pd
+"""Train the heart disease prediction model and save the artifact."""
 
-from sklearn.model_selection import train_test_split
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import (
-    StandardScaler,
-    OneHotEncoder,
-)
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    roc_auc_score,
-    confusion_matrix,
-    classification_report,
-)
+from pathlib import Path
 
-# Load Dataset
-df = pd.read_csv("Heart_Disease_Prediction.csv")
+import joblib
 
-print(df.head())
+try:
+    from .evaluate import evaluate_model
+    from .preprocess import build_pipeline, load_data, split_features_target, split_train_test
+except ImportError:  # pragma: no cover - script execution fallback
+    from evaluate import evaluate_model
+    from preprocess import build_pipeline, load_data, split_features_target, split_train_test
 
-print("\nShape")
-print(df.shape)
+MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "logistic_regression.joblib"
 
-# Create Target Variable
-df["Heart Disease"] = (df["Heart Disease"].map({
-        "Presence": 1,
-        "Absence": 0
-    })
-)
 
-print(
-    df["Heart Disease"].value_counts()
-)
+def train_model(data_path=None, model_path=None):
+    """Load data, train the model, evaluate it, and save the trained artifact."""
+    df = load_data(data_path)
+    X, y = split_features_target(df)
+    X_train, X_test, y_train, y_test = split_train_test(X, y)
 
-# Seperate Features and Target
-X = df.drop(
-    "Heart Disease",
-    axis=1 ## Droping the Heart disease Column
-)
+    model = build_pipeline(X_train)
+    model.fit(X_train, y_train)
 
-y = df["Heart Disease"] ## Target Variable
+    metrics = evaluate_model(model, X_test, y_test)
 
-# Detect Numerical & Categorical columns
-numerical_cols=(
-    X.select_dtypes(
-        include=np.number ## Only include numbers
-    )
-    .columns
-)
+    target_path = Path(model_path or MODEL_PATH)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, target_path)
 
-categorical_cols=(
-    X.select_dtypes(
-        exclude=np.number ## Exclude numbers
-    )
-    .columns
-)
+    return {"model": model, "model_path": target_path, "metrics": metrics}
 
-print(numerical_cols)
-print(categorical_cols)
 
-# Build Preprocessing / Cleaning Data
-numeric_transformer= Pipeline(
-    steps=[
-        (
-            "imputer",
-            SimpleImputer(
-                strategy="median" ## Fill Missing -> Impute column median at null value
-            )
-        ),
-        (
-            "scaler",
-            StandardScaler() ## Scaling so big numbers don't dominate
-        )
-    ]
-)
+def main():
+    results = train_model()
+    print(f"Saved model to {results['model_path']}")
 
-categorical_transformer= Pipeline(
-    steps=[
-        (
-            "imputer",
-            SimpleImputer(
-                strategy="most_frequent" ## Fill Missing -> Impute most frequently occured category
-            )
-        ),
-        (
-            "encoder",
-            OneHotEncoder(
-                handle_unknown="ignore"
-            )
-        )
-    ]
-)
 
-# Combine preprocessing
-preprocessor = (
-    ColumnTransformer( ## Applying Transformers to respective columns
-        transformers=[
-            (
-                "num",
-                numeric_transformer,
-                numerical_cols
-            ),
-            (
-                "cat",
-                categorical_transformer,
-                categorical_cols
-            ),
-        ]
-    )
-)
-
-# Build Pipeline -> Logistic Regression
-model = Pipeline(
-    steps=[
-        (
-            "preprocessor",
-            preprocessor
-        ),
-        (
-            "classifier",
-            LogisticRegression(
-                max_iter=1000
-            )
-        ),
-    ]
-)
-
-# Split Dataset -> Train & Test sets
-X_train, X_test, y_train, y_test = (
-    train_test_split(
-        X,
-        y,
-        test_size=0.2, # 20% Test/Evaluate & 80% Traain/Learn
-        random_state=42,
-        stratify=y
-    )
-)
-
-# Train Model
-model.fit(
-    X_train,
-    y_train
-)
-
-# Predict Outcome and Probability Estimation
-predictions=(
-    model.predict(
-        X_test
-    )
-)
-
-probabilities=(
-    model.predict_proba(
-        X_test
-    )[:, 1]
-)
-
-# Overall Evaluation / Insights
-print("\nAccuracy:") ## Overall Accuracy/Correctness
-print(
-    accuracy_score(
-        y_test,
-        predictions
-    )
-)
-
-print("\nROU AUC:") ##  Seperation Ability (between Heart Diseased (1) and Healthy(0))
-print(
-    roc_auc_score(
-        y_test,
-        probabilities
-    )
-)
-
-print("\nConfusion Matrix:") # Breakdown of mistakes made by model
-print(
-    confusion_matrix(
-        y_test,
-        predictions
-    )
-)
-
-print("\nClassification Report:") ## Overall Precision / recall / F1 report
-print(
-    classification_report(
-        y_test,
-        predictions
-    )
-)
-
-# Test On Sample Patient
-patient=(
-    X_test.iloc[[0]]
-)
-
-prob=(
-    model.predict_proba(
-        patient
-    )[0][1]
-)
-
-pred=(
-    model.predict(
-        patient
-    )[0]
-)
-
-print(
-    f"\nProbability: {prob:.2%}"
-)
-
-print(
-    "Predictions:",
-    (
-        "Presence" if pred == 1
-        else "Absence"
-    )
-)
+if __name__ == "__main__":
+    main()
