@@ -6,7 +6,9 @@ from typing import Any
 import joblib
 import pandas as pd
 
-DEFAULT_MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "logistic_regression.joblib"
+DEFAULT_MODEL_PATH = (
+    Path(__file__).resolve().parents[1] / "models" / "logistic_regression.joblib"
+)
 
 
 def load_model(model_path: str | Path | None = None):
@@ -29,12 +31,16 @@ def _coerce_patient(patient: Any, model=None) -> pd.DataFrame:
         raise TypeError("patient must be a dictionary or a pandas DataFrame")
 
     if model is not None and hasattr(model, "feature_names_in_"):
-        patient_df = patient_df.reindex(columns=list(model.feature_names_in_), fill_value=0)
+        patient_df = patient_df.reindex(
+            columns=list(model.feature_names_in_), fill_value=0
+        )
 
     return patient_df
 
 
-def predict_from_patient(patient: Any, model_path: str | Path | None = None) -> dict[str, float | int]:
+def predict_from_patient(
+    patient: Any, model_path: str | Path | None = None
+) -> dict[str, float | int]:
     """Return a prediction and probability for a patient record."""
     model = load_model(model_path)
     patient_df = _coerce_patient(patient, model=model)

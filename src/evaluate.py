@@ -4,7 +4,47 @@ from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_auc_score
+import numpy as np
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    roc_auc_score,
+)
+
+
+def cross_validate_model(
+    model,
+    X,
+    y,
+    n_splits: int = 5,
+    random_state: int = 42,
+    scoring: str = "accuracy",
+) -> dict[str, object]:
+    """Evaluate a classification model using stratified k-fold cross validation."""
+    cv = StratifiedKFold(
+        n_splits=n_splits,
+        shuffle=True,
+        random_state=random_state,
+    )
+
+    scores = cross_val_score(
+        model,
+        X,
+        y,
+        cv=cv,
+        scoring=scoring,
+        n_jobs=-1,
+    )
+
+    return {
+        "fold_scores": scores.tolist(),
+        "mean_score": float(np.mean(scores)),
+        "std_score": float(np.std(scores, ddof=0)),
+        "n_splits": n_splits,
+        "scoring": scoring,
+    }
 
 
 def evaluate_model(model, X_test, y_test) -> dict[str, float | object]:

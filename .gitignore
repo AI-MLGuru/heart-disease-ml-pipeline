@@ -1,17 +1,14 @@
 kaggle.json
 
 # Python
-__pycache__/
+**pycache**/
 *.py[cod]
 *$py.class
 .ipynb_checkpoints/
 
 # Virtual environments
-.venv/
-*.venv/
-.venv*/
-.venv_wsl/
-venv/
+*.venv/*
+*.venv*/
 ENV/
 env/
 
@@ -50,3 +47,4 @@ Thumbs.db
 
 # ML ENV
 models/*.joblib
+models/*.pkl

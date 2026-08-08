@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from src.preprocess import build_pipeline, load_data, split_features_target
 from src.predict import predict_from_patient
 from src.train import train_model
+from src.evaluate import cross_validate_model
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "heart.csv"
 
@@ -33,6 +34,20 @@ def test_build_pipeline_fits_and_predicts():
     predictions = pipeline.predict(X_test)
 
     assert len(predictions) == len(y_test)
+
+
+def test_cross_validate_model_returns_scores():
+    df = load_data(DATA_PATH)
+    X, y = split_features_target(df)
+
+    pipeline = build_pipeline(X)
+    results = cross_validate_model(pipeline, X, y, n_splits=5, random_state=42)
+
+    assert "fold_scores" in results
+    assert "mean_score" in results
+    assert "std_score" in results
+    assert len(results["fold_scores"]) == 5
+    assert 0.0 <= results["mean_score"] <= 1.0
 
 
 def test_predict_from_patient_returns_probability_and_prediction(tmp_path):
