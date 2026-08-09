@@ -1,11 +1,17 @@
-"""Evaluation helpers for the heart disease prediction model."""
+"""Evaluation helpers for the heart disease prediction model.
+
+This module provides a structured cross-validation reporting function that
+computes per-fold metrics (accuracy, precision, recall, f1, roc_auc), summary
+statistics (mean/std/min/max) and the class distribution observed in each
+validation fold. It also exposes a simple hold-out evaluation helper.
+"""
 
 from pathlib import Path
 from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -20,30 +26,65 @@ def cross_validate_model(
     y,
     n_splits: int = 5,
     random_state: int = 42,
-    scoring: str = "accuracy",
-) -> dict[str, object]:
-    """Evaluate a classification model using stratified k-fold cross validation."""
-    cv = StratifiedKFold(
-        n_splits=n_splits,
-        shuffle=True,
-        random_state=random_state,
-    )
+    scoring: dict | None = None,
+):
+    """Run stratified K-fold CV and return per-metric fold scores and summaries.
 
-    scores = cross_val_score(
-        model,
-        X,
-        y,
-        cv=cv,
+    scoring: dictionary of named scoring metrics or None to use a sensible default.
+    Returns a dictionary with per-metric fold arrays and summary statistics.
+    """
+    if scoring is None:
+        scoring = {
+            "accuracy": "accuracy",
+            "precision": "precision",
+            "recall": "recall",
+            "f1": "f1",
+            "roc_auc": "roc_auc",
+        }
+
+    cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+
+    cv_result = cross_validate(
+        estimator=model,
+        X=X,
+        y=y,
         scoring=scoring,
+        cv=cv,
+        return_train_score=False,
         n_jobs=-1,
     )
 
+    # Build a metrics summary
+    metrics = {}
+    for key in cv_result:
+        if not key.startswith("test_"):
+            continue
+        metric_name = key.replace("test_", "")
+        values = np.asarray(cv_result[key])
+        metrics[metric_name] = {
+            "folds": values.tolist(),
+            "mean": float(np.mean(values)),
+            "std": float(np.std(values, ddof=0)),
+            "min": float(np.min(values)),
+            "max": float(np.max(values)),
+        }
+
+    # verify class distribution in validation folds
+    fold_distributions = []
+    for train_idx, val_idx in cv.split(X, y):
+        y_val = np.asarray(y)[val_idx]
+        unique, counts = np.unique(y_val, return_counts=True)
+        dist = {int(k): int(v) for k, v in zip(unique.tolist(), counts.tolist())}
+        fold_distributions.append(dist)
+
     return {
-        "fold_scores": scores.tolist(),
-        "mean_score": float(np.mean(scores)),
-        "std_score": float(np.std(scores, ddof=0)),
         "n_splits": n_splits,
-        "scoring": scoring,
+        "metrics": metrics,
+        "fold_class_distribution": fold_distributions,
+        # Backwards-compatible keys used by older tests / callers
+        "fold_scores": metrics.get("accuracy", {}).get("folds", []),
+        "mean_score": metrics.get("accuracy", {}).get("mean", None),
+        "std_score": metrics.get("accuracy", {}).get("std", None),
     }
 
 

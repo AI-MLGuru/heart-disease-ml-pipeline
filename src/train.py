@@ -34,21 +34,21 @@ def train_model(data_path=None, model_path=None):
 
     model = build_pipeline(X_train)
 
-    cv_results = cross_validate_model(
-        model,
-        X_train,
-        y_train,
-        n_splits=5,
-        random_state=42,
-        scoring="accuracy",
-    )
+    cv_results = cross_validate_model(model, X_train, y_train, n_splits=5, random_state=42)
 
-    print("Cross-validation results:")
-    for index, score in enumerate(cv_results["fold_scores"], start=1):
-        print(f"Fold {index}: {score:.4f}")
-    print(f"Mean CV accuracy: {cv_results['mean_score']:.4f}")
-    print(f"Std CV accuracy: {cv_results['std_score']:.4f}")
+    print("Cross-validation summary:")
+    for metric, stats in cv_results["metrics"].items():
+        mean = stats["mean"]
+        std = stats["std"]
+        mn = stats["min"]
+        mx = stats["max"]
+        print(f"- {metric:8s}: mean={mean:.4f}  std={std:.4f}  min={mn:.4f}  max={mx:.4f}")
 
+    print("\nPer-fold class distributions (validation sets):")
+    for i, dist in enumerate(cv_results["fold_class_distribution"], start=1):
+        print(f" Fold {i}: {dist}")
+
+    # Fit final model on all training data
     model.fit(X_train, y_train)
 
     metrics = evaluate_model(model, X_test, y_test)
