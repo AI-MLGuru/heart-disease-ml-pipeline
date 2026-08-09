@@ -48,3 +48,5 @@ Thumbs.db
 # ML ENV
 models/*.joblib
 models/*.pkl
+
+tmp_*.txt
