@@ -50,3 +50,8 @@ models/*.joblib
 models/*.pkl
 
 tmp_*.txt
+pytest_*.txt
+debug_*.txt
+*.log
+test_*.txt
+terminal*.txt

@@ -77,13 +77,19 @@ def source_missingness_summary(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def duplicate_summary(df: pd.DataFrame) -> dict[str, Any]:
-    exact = detect_exact_duplicates(df)
-    cross_source = detect_cross_source_duplicates(df)
+    subset = CANONICAL_FEATURES + [TARGET_COLUMN]
+    exact_mask = df.duplicated(subset=subset, keep=False)
+    exact = df[exact_mask]
+    exact_groups = exact.groupby(subset).size().ge(2).sum()
+
+    cross_source = exact.groupby(subset).filter(lambda group: group["source_dataset"].nunique() > 1)
+    cross_source_groups = cross_source.groupby(subset).size().ge(2).sum()
+
     return {
         "exact_duplicate_rows": int(len(exact)),
-        "exact_duplicate_groups": int(exact.duplicated(keep=False).sum() // 2),
+        "exact_duplicate_groups": int(exact_groups),
         "cross_source_duplicate_rows": int(len(cross_source)),
-        "cross_source_duplicate_groups": int(cross_source.duplicated(keep=False).sum() // 2),
+        "cross_source_duplicate_groups": int(cross_source_groups),
     }
 
 

@@ -8,3 +8,4 @@ joblib
 mypy
 black
 black[jupyter]
+tabulate

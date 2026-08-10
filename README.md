@@ -134,6 +134,30 @@ This is important because combining datasets without preserving source informati
 
 ---
 
+# Dataset Audit and Multi-Source Readiness
+The current implementation treats the UCI sites as development and benchmark sources.
+The project is designed so that future datasets from other regions can be integrated without losing their provenance.
+
+The harmonization layer preserves provenance metadata for every observation:
+
+- `source_collection`
+- `source_dataset`
+- `source_file`
+- `source_row_id`
+
+This allows us to compare performance across sources and to add country-specific datasets later without losing source identity.
+
+The dataset-analysis/reporting layer is built to identify:
+
+- dataset composition differences
+- per-feature missingness patterns
+- source shift and population differences
+- exact duplicates and cross-source duplicate candidates
+
+This positions the project for a future multi-country architecture, where UCI remains a benchmark and new datasets from Nigeria or other regions can be added as separate provenance-aware sources.
+
+---
+
 # Dataset Registry
 `src/dataset_registry.py`
 
@@ -222,6 +246,30 @@ audit_all_datasets()
 
 The audit layer is intentionally conservative.
 It reports what exists in the source data rather than making assumptions about how different datasets should be combined.
+
+---
+
+# Dataset Audit and Multi-Source Readiness
+The current implementation treats the UCI sites as development and benchmark sources only.
+The project is designed around a more general data architecture for real-world, country-aware dataset integration.
+It preserves provenance metadata for every observation so later datasets from Nigeria, Ghana, South Africa, India, or other regions can be integrated without losing source identity.
+
+The harmonization pipeline maps heterogeneous datasets into a canonical schema while preserving:
+
+- source dataset identifier
+- source file and row provenance
+- country/region or clinical source metadata
+- target encoding rules
+- feature semantics
+
+The dataset-analysis/reporting layer is explicitly built to identify:
+
+- dataset composition differences
+- feature missingness patterns
+- source shift and population differences
+- exact duplicates and cross-source duplicate candidates
+
+This makes the project suitable for evolving from a UCI benchmark into a multi-country dataset ecosystem.
 
 ---
 

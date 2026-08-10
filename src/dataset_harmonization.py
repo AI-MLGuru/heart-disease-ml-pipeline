@@ -102,7 +102,8 @@ def report_missingness(df: pd.DataFrame) -> pd.Series:
 
 
 def detect_exact_duplicates(df: pd.DataFrame) -> pd.DataFrame:
-    return df[df.duplicated(keep=False)]
+    subset = HARMONIZED_COLUMNS + PROVENANCE_COLUMNS
+    return df[df.duplicated(subset=subset, keep=False)]
 
 
 def detect_cross_source_duplicates(df: pd.DataFrame) -> pd.DataFrame:
