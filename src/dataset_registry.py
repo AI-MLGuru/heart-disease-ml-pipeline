@@ -1,63 +1,171 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import json
+from dataclasses import asdict
 from pathlib import Path
-from typing import Dict, Iterable
+from typing import Dict
+
+from .dataset_metadata import DatasetFeature, DatasetMetadata
 
 DATA_DIRECTORY = Path(__file__).resolve().parents[1] / "data" / "heart+disease"
 
 
-@dataclass(frozen=True)
-class DatasetMetadata:
-    dataset_id: str
-    collection_id: str
-    source: str
-    source_file: str
-    site: str
-    format: str
-    target_column: str
-
-    @property
-    def source_path(self) -> Path:
-        return DATA_DIRECTORY / self.source_file
+def _default_uci_schema() -> list[DatasetFeature]:
+    return [
+        DatasetFeature(name=str(i), canonical_name=field, dtype="numeric")
+        for i, field in enumerate(
+            [
+                "age",
+                "sex",
+                "cp",
+                "trestbps",
+                "chol",
+                "fbs",
+                "restecg",
+                "thalach",
+                "exang",
+                "oldpeak",
+                "slope",
+                "ca",
+                "thal",
+                "num",
+            ]
+        )
+    ]
 
 
 DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     "uci_hd_cleveland": DatasetMetadata(
         dataset_id="uci_hd_cleveland",
-        collection_id="uci_heart_disease_45",
+        name="UCI Heart Disease Cleveland",
+        version="1.0",
         source="UCI Machine Learning Repository",
-        source_file="processed.cleveland.data",
-        site="Cleveland",
+        source_url="https://archive.ics.uci.edu/ml/datasets/heart+disease",
+        publisher="UCI",
+        original_dataset_id="uci_hd_cleveland",
+        accessed_at=None,
+        country="United States",
+        region="North America",
+        population="Adults",
+        age_range="30-70",
+        sex_distribution="male/female",
+        sample_size=303,
+        clinical_setting="Cardiology",
+        disease_definition="Coronary heart disease",
+        target_definition="Presence of heart disease (0=no, 1=present)",
+        collection_method="Clinical examination",
+        collection_year=1988,
+        publication_year=1988,
+        license="UCI dataset license",
+        usage_restrictions="Research use",
+        consent_information=None,
+        privacy_status="anonymized",
+        continent="North America",
+        geographic_domain="US clinical sample",
+        source_file=str(DATA_DIRECTORY / "processed.cleveland.data"),
         format="csv",
         target_column="num",
+        schema=_default_uci_schema(),
+        notes="Cleveland site from UCI heart disease dataset.",
     ),
     "uci_hd_hungarian": DatasetMetadata(
         dataset_id="uci_hd_hungarian",
-        collection_id="uci_heart_disease_45",
+        name="UCI Heart Disease Hungarian",
+        version="1.0",
         source="UCI Machine Learning Repository",
-        source_file="processed.hungarian.data",
-        site="Hungary",
+        source_url="https://archive.ics.uci.edu/ml/datasets/heart+disease",
+        publisher="UCI",
+        original_dataset_id="uci_hd_hungarian",
+        accessed_at=None,
+        country="Hungary",
+        region="Europe",
+        population="Adults",
+        age_range="30-70",
+        sex_distribution="male/female",
+        sample_size=294,
+        clinical_setting="Cardiology",
+        disease_definition="Coronary heart disease",
+        target_definition="Presence of heart disease (0=no, 1=present)",
+        collection_method="Clinical examination",
+        collection_year=1988,
+        publication_year=1988,
+        license="UCI dataset license",
+        usage_restrictions="Research use",
+        consent_information=None,
+        privacy_status="anonymized",
+        continent="Europe",
+        geographic_domain="Hungarian clinical sample",
+        source_file=str(DATA_DIRECTORY / "processed.hungarian.data"),
         format="csv",
         target_column="num",
+        schema=_default_uci_schema(),
+        notes="Hungarian site from UCI heart disease dataset.",
     ),
     "uci_hd_switzerland": DatasetMetadata(
         dataset_id="uci_hd_switzerland",
-        collection_id="uci_heart_disease_45",
+        name="UCI Heart Disease Switzerland",
+        version="1.0",
         source="UCI Machine Learning Repository",
-        source_file="processed.switzerland.data",
-        site="Switzerland",
+        source_url="https://archive.ics.uci.edu/ml/datasets/heart+disease",
+        publisher="UCI",
+        original_dataset_id="uci_hd_switzerland",
+        accessed_at=None,
+        country="Switzerland",
+        region="Europe",
+        population="Adults",
+        age_range="30-70",
+        sex_distribution="male/female",
+        sample_size=123,
+        clinical_setting="Cardiology",
+        disease_definition="Coronary heart disease",
+        target_definition="Presence of heart disease (0=no, 1=present)",
+        collection_method="Clinical examination",
+        collection_year=1988,
+        publication_year=1988,
+        license="UCI dataset license",
+        usage_restrictions="Research use",
+        consent_information=None,
+        privacy_status="anonymized",
+        continent="Europe",
+        geographic_domain="Swiss clinical sample",
+        source_file=str(DATA_DIRECTORY / "processed.switzerland.data"),
         format="csv",
         target_column="num",
+        schema=_default_uci_schema(),
+        notes="Switzerland site from UCI heart disease dataset.",
     ),
     "uci_hd_va": DatasetMetadata(
         dataset_id="uci_hd_va",
-        collection_id="uci_heart_disease_45",
+        name="UCI Heart Disease VA",
+        version="1.0",
         source="UCI Machine Learning Repository",
-        source_file="processed.va.data",
-        site="VA Long Beach",
+        source_url="https://archive.ics.uci.edu/ml/datasets/heart+disease",
+        publisher="UCI",
+        original_dataset_id="uci_hd_va",
+        accessed_at=None,
+        country="United States",
+        region="North America",
+        population="Veterans",
+        age_range="30-70",
+        sex_distribution="male",
+        sample_size=200,
+        clinical_setting="Cardiology",
+        disease_definition="Coronary heart disease",
+        target_definition="Presence of heart disease (0=no, 1=present)",
+        collection_method="Clinical examination",
+        collection_year=1988,
+        publication_year=1988,
+        license="UCI dataset license",
+        usage_restrictions="Research use",
+        consent_information=None,
+        privacy_status="anonymized",
+        continent="North America",
+        geographic_domain="US veteran clinical sample",
+        source_file=str(DATA_DIRECTORY / "processed.va.data"),
         format="csv",
         target_column="num",
+        schema=_default_uci_schema(),
+        notes="Long Beach VA site from UCI heart disease dataset.",
     ),
 }
 
@@ -72,3 +180,14 @@ def list_datasets() -> list[DatasetMetadata]:
 
 def get_dataset_metadata(dataset_id: str) -> DatasetMetadata:
     return DATASET_REGISTRY[dataset_id]
+
+
+def export_registry_json(path: Path) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {dataset_id: asdict(metadata) for dataset_id, metadata in DATASET_REGISTRY.items()},
+            indent=2,
+        )
+    )
+    return path
