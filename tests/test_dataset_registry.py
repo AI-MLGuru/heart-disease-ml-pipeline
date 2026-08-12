@@ -39,3 +39,27 @@ def test_registered_datasets_have_collection_id():
     ]
     collections = {get_dataset_metadata(ds).collection_id for ds in uci_ids}
     assert len(collections) == 1
+
+
+def test_uci_site_and_geography():
+    clev = get_dataset_metadata("uci_hd_cleveland")
+    va = get_dataset_metadata("uci_hd_va")
+    hun = get_dataset_metadata("uci_hd_hungarian")
+    ch = get_dataset_metadata("uci_hd_switzerland")
+
+    # site fields present
+    assert clev.site is not None
+    assert va.site is not None
+    assert hun.site is not None
+    assert ch.site is not None
+
+    # countries and regions as expected
+    assert clev.country == "USA"
+    assert va.country == "USA"
+    assert clev.region == "North America"
+    assert va.region == "North America"
+
+    assert hun.country == "Hungary"
+    assert hun.region == "Europe"
+    assert ch.country == "Switzerland"
+    assert ch.region == "Europe"

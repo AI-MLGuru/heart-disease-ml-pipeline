@@ -20,36 +20,49 @@ class DatasetFeature:
 
 @dataclass(frozen=True)
 class DatasetMetadata:
+    # Identity / required provenance
     dataset_id: str
     collection_id: str | None
     name: str
     version: str
     source: str
-    source_url: str | None
-    publisher: str | None
-    original_dataset_id: str | None
-    accessed_at: str | None
-    country: str | None
-    region: str | None
-    population: str | None
-    age_range: str | None
-    sex_distribution: str | None
-    sample_size: int | None
-    clinical_setting: str | None
-    disease_definition: str | None
-    target_definition: str | None
-    collection_method: str | None
-    collection_year: int | None
-    publication_year: int | None
-    license: str | None
-    usage_restrictions: str | None
-    consent_information: str | None
-    privacy_status: str | None
-    continent: str | None
-    geographic_domain: str | None
     source_file: str
     format: str
     target_column: str
+
+    # Optional descriptive / source fields
+    source_url: str | None = None
+    publisher: str | None = None
+    original_dataset_id: str | None = None
+    accessed_at: str | None = None
+    site: str | None = None
+
+    # Geography
+    country: str | None = None
+    region: str | None = None
+    continent: str | None = None
+    geographic_domain: str | None = None
+
+    # Demographics / dataset details
+    population: str | None = None
+    age_range: str | None = None
+    sex_distribution: str | None = None
+    sample_size: int | None = None
+    clinical_setting: str | None = None
+
+    # Definitions and timing
+    disease_definition: str | None = None
+    target_definition: str | None = None
+    collection_method: str | None = None
+    collection_year: int | None = None
+    publication_year: int | None = None
+
+    # Policy / miscellaneous
+    license: str | None = None
+    usage_restrictions: str | None = None
+    consent_information: str | None = None
+    privacy_status: str | None = None
+
     schema: list[DatasetFeature] | None = None
     notes: str | None = None
 
