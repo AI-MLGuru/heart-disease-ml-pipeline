@@ -21,6 +21,7 @@ class DatasetFeature:
 @dataclass(frozen=True)
 class DatasetMetadata:
     dataset_id: str
+    collection_id: str | None
     name: str
     version: str
     source: str

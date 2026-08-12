@@ -37,6 +37,7 @@ def _default_uci_schema() -> list[DatasetFeature]:
 DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     "uci_hd_cleveland": DatasetMetadata(
         dataset_id="uci_hd_cleveland",
+        collection_id="uci_heart_disease_45",
         name="UCI Heart Disease Cleveland",
         version="1.0",
         source="UCI Machine Learning Repository",
@@ -70,6 +71,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     ),
     "uci_hd_hungarian": DatasetMetadata(
         dataset_id="uci_hd_hungarian",
+        collection_id="uci_heart_disease_45",
         name="UCI Heart Disease Hungarian",
         version="1.0",
         source="UCI Machine Learning Repository",
@@ -103,6 +105,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     ),
     "uci_hd_switzerland": DatasetMetadata(
         dataset_id="uci_hd_switzerland",
+        collection_id="uci_heart_disease_45",
         name="UCI Heart Disease Switzerland",
         version="1.0",
         source="UCI Machine Learning Repository",
@@ -136,6 +139,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     ),
     "uci_hd_va": DatasetMetadata(
         dataset_id="uci_hd_va",
+        collection_id="uci_heart_disease_45",
         name="UCI Heart Disease VA",
         version="1.0",
         source="UCI Machine Learning Repository",

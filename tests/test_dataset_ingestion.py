@@ -16,6 +16,7 @@ def test_ingest_dataset_attaches_provenance_columns():
     assert "source_row_id" in df.columns
     assert df["source_file"].eq(metadata.source_file).all()
     assert df["source_dataset"].eq(metadata.dataset_id).all()
+    assert df["source_collection"].eq(metadata.collection_id).all()
 
 
 def test_ingest_dataset_preserves_raw_data_types():

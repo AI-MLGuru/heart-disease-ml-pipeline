@@ -6,7 +6,7 @@ from typing import Iterable
 
 import pandas as pd
 
-from .dataset_registry import DatasetMetadata, get_dataset_metadata, list_dataset_ids
+from .dataset_registry import get_dataset_metadata, list_dataset_ids
 
 
 def _read_csv_preserve_raw(path: Path) -> pd.DataFrame:

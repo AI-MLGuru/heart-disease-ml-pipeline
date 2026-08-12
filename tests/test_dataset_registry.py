@@ -24,3 +24,18 @@ def test_export_registry_json(tmp_path: Path):
     content = result.read_text()
     assert "uci_hd_cleveland" in content
     assert "UCI Heart Disease Cleveland" in content
+
+
+def test_registered_datasets_have_collection_id():
+    for ds in list_dataset_ids():
+        metadata = get_dataset_metadata(ds)
+        assert getattr(metadata, "collection_id", None) is not None
+
+    uci_ids = [
+        "uci_hd_cleveland",
+        "uci_hd_hungarian",
+        "uci_hd_switzerland",
+        "uci_hd_va",
+    ]
+    collections = {get_dataset_metadata(ds).collection_id for ds in uci_ids}
+    assert len(collections) == 1
