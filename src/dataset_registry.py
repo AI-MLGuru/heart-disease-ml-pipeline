@@ -38,6 +38,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     "uci_hd_cleveland": DatasetMetadata(
         dataset_id="uci_hd_cleveland",
         collection_id="uci_heart_disease_45",
+        access_status="ACQUIRED",
         site="Cleveland Clinic Foundation",
         name="UCI Heart Disease Cleveland",
         version="1.0",
@@ -73,6 +74,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     "uci_hd_hungarian": DatasetMetadata(
         dataset_id="uci_hd_hungarian",
         collection_id="uci_heart_disease_45",
+        access_status="ACQUIRED",
         site="Hungarian Institute of Cardiology",
         name="UCI Heart Disease Hungarian",
         version="1.0",
@@ -108,6 +110,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     "uci_hd_switzerland": DatasetMetadata(
         dataset_id="uci_hd_switzerland",
         collection_id="uci_heart_disease_45",
+        access_status="ACQUIRED",
         site="University Hospital, Zurich",
         name="UCI Heart Disease Switzerland",
         version="1.0",
@@ -143,6 +146,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
     "uci_hd_va": DatasetMetadata(
         dataset_id="uci_hd_va",
         collection_id="uci_heart_disease_45",
+        access_status="ACQUIRED",
         site="V.A. Medical Center, Long Beach",
         name="UCI Heart Disease VA",
         version="1.0",
@@ -218,8 +222,25 @@ def list_dataset_ids() -> list[str]:
     return list(DATASET_REGISTRY.keys())
 
 
+def list_dataset_ids_by_status(status: str | None = None) -> list[str]:
+    """Return dataset ids optionally filtered by access_status.
+
+    If `status` is None return all registered dataset ids; otherwise return
+    only those datasets whose `access_status` equals the provided status.
+    """
+    if status is None:
+        return list_dataset_ids()
+    return [ds_id for ds_id, md in DATASET_REGISTRY.items() if getattr(md, "access_status", None) == status]
+
+
 def list_datasets() -> list[DatasetMetadata]:
     return list(DATASET_REGISTRY.values())
+
+
+def list_datasets_by_status(status: str | None = None) -> list[DatasetMetadata]:
+    if status is None:
+        return list_datasets()
+    return [md for md in DATASET_REGISTRY.values() if getattr(md, "access_status", None) == status]
 
 
 def get_dataset_metadata(dataset_id: str) -> DatasetMetadata:

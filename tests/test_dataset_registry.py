@@ -63,3 +63,18 @@ def test_uci_site_and_geography():
     assert hun.region == "Europe"
     assert ch.country == "Switzerland"
     assert ch.region == "Europe"
+
+
+def test_pending_dataset_excluded_from_acquired_list():
+    # all registered datasets should include the pending Nigerian candidate
+    all_ids = list_dataset_ids()
+    assert "ng_kano_cad_506" in all_ids
+
+    # acquired-only listing should not include the pending dataset
+    from src.dataset_registry import list_dataset_ids_by_status
+
+    acquired = list_dataset_ids_by_status("ACQUIRED")
+    assert "ng_kano_cad_506" not in acquired
+    # ensure the four UCI datasets are still acquired
+    for ds in ["uci_hd_cleveland", "uci_hd_hungarian", "uci_hd_switzerland", "uci_hd_va"]:
+        assert ds in acquired

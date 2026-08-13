@@ -6,7 +6,7 @@ from typing import Iterable
 
 import pandas as pd
 
-from .dataset_registry import get_dataset_metadata, list_dataset_ids
+from .dataset_registry import get_dataset_metadata, list_dataset_ids_by_status
 
 
 def _read_csv_preserve_raw(path: Path) -> pd.DataFrame:
@@ -31,5 +31,5 @@ def ingest_dataset(dataset_id: str) -> pd.DataFrame:
 
 
 def ingest_all_datasets() -> pd.DataFrame:
-    frames = [ingest_dataset(dataset_id) for dataset_id in list_dataset_ids()]
+    frames = [ingest_dataset(dataset_id) for dataset_id in list_dataset_ids_by_status("ACQUIRED")]
     return pd.concat(frames, ignore_index=True)

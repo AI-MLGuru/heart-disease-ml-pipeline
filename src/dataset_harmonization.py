@@ -93,7 +93,10 @@ def harmonize_dataset(dataset_id: str) -> pd.DataFrame:
 
 
 def build_unified_dataset() -> pd.DataFrame:
-    frames = [harmonize_dataset(dataset_id) for dataset_id in list_dataset_ids()]
+    # Only include datasets that are acquired/available for ingestion
+    from .dataset_registry import list_dataset_ids_by_status
+
+    frames = [harmonize_dataset(dataset_id) for dataset_id in list_dataset_ids_by_status("ACQUIRED")]
     return pd.concat(frames, ignore_index=True)
 
 

@@ -6,7 +6,7 @@ from typing import Any
 
 import pandas as pd
 
-from .dataset_registry import DatasetMetadata, list_dataset_ids, get_dataset_metadata
+from .dataset_registry import DatasetMetadata, list_dataset_ids_by_status, get_dataset_metadata
 from .dataset_ingestion import ingest_dataset
 
 PROVENANCE_COLUMNS = {
@@ -46,5 +46,6 @@ def dataset_audit(dataset_id: str) -> dict[str, Any]:
     }
 
 
-def audit_all_datasets() -> dict[str, dict[str, Any]]:
-    return {dataset_id: dataset_audit(dataset_id) for dataset_id in list_dataset_ids()}
+def audit_all_datasets(status: str = "ACQUIRED") -> dict[str, dict[str, Any]]:
+    """Audit datasets filtered by access status (defaults to ACQUIRED)."""
+    return {dataset_id: dataset_audit(dataset_id) for dataset_id in list_dataset_ids_by_status(status)}

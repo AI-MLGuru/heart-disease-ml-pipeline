@@ -7,38 +7,95 @@ from pathlib import Path
 
 import numpy as np
 
-from .preprocess import load_data, split_features_target, build_pipeline
-from .evaluate import cross_validate_model
+from .preprocess import load_data, split_features_target, build_preprocessor
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.pipeline import Pipeline
+import numpy as np
 
 
-def build_pipeline_with_classifier(X, classifier):
-    # reuse preprocessing by building a pipeline and replacing the classifier
-    preproc_pipeline = build_pipeline(X)
-    # preproc_pipeline is Pipeline(preprocessor + classifier), so replace last step
-    steps = list(preproc_pipeline.steps)
-    # set classifier
-    steps[-1] = ("classifier", classifier)
-    return Pipeline(steps=steps)
+
+DEFAULT_SCORING = {
+    "accuracy": "accuracy",
+    "precision": "precision",
+    "recall": "recall",
+    "f1": "f1",
+    "roc_auc": "roc_auc",
+}
 
 
-def compare_models(n_splits=5, random_state=42):
-    df = load_data()
-    X, y = split_features_target(df)
+def _summarize_cv_result(cv_result: dict) -> dict:
+    metrics: dict = {}
+    for key, values in cv_result.items():
+        if not key.startswith("test_"):
+            continue
+        metric_name = key.replace("test_", "")
+        arr = np.asarray(values)
+        metrics[metric_name] = {
+            "folds": arr.tolist(),
+            "mean": float(np.mean(arr)),
+            "std": float(np.std(arr, ddof=0)),
+            "min": float(np.min(arr)),
+            "max": float(np.max(arr)),
+        }
+    return metrics
 
-    models = {
-        "LogisticRegression": LogisticRegression(max_iter=1000),
-        "RandomForest": RandomForestClassifier(n_estimators=200, random_state=random_state),
-        "GradientBoosting": GradientBoostingClassifier(n_estimators=200, random_state=random_state),
-    }
 
-    results = {}
-    for name, clf in models.items():
-        pipeline = build_pipeline_with_classifier(X, clf)
-        cv = cross_validate_model(pipeline, X, y, n_splits=n_splits, random_state=random_state)
-        results[name] = cv
+def compare_models(
+    X,
+    y,
+    models: dict | None = None,
+    n_splits: int = 5,
+    random_state: int = 42,
+    scoring: dict | None = None,
+    n_jobs: int = 1,
+):
+    """Compare multiple estimators using the same StratifiedKFold splits.
+
+    Returns a dict containing `n_splits`, `fold_class_distribution`, and a
+    `models` mapping where each model entry has `metrics` and the raw `cv_result`.
+    """
+    if scoring is None:
+        scoring = DEFAULT_SCORING
+
+    if models is None:
+        models = {
+            "Logistic Regression": LogisticRegression(max_iter=1000),
+            "Random Forest": RandomForestClassifier(n_estimators=100, random_state=random_state),
+            "Gradient Boosting": GradientBoostingClassifier(random_state=random_state),
+        }
+
+    cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+
+    # compute fold class distributions once for reporting
+    fold_distributions = []
+    for train_idx, val_idx in cv.split(X, y):
+        y_val = np.asarray(y)[val_idx]
+        unique, counts = np.unique(y_val, return_counts=True)
+        dist = {int(k): int(v) for k, v in zip(unique.tolist(), counts.tolist())}
+        fold_distributions.append(dist)
+
+    results: dict = {"n_splits": n_splits, "fold_class_distribution": fold_distributions, "models": {}}
+
+    for name, estimator in models.items():
+        # compose preprocessor + estimator so preprocessing is identical
+        preprocessor = build_preprocessor(X)
+        pipe = Pipeline([("preprocessor", preprocessor), ("classifier", estimator)])
+
+        cv_result = cross_validate(
+            estimator=pipe,
+            X=X,
+            y=y,
+            scoring=scoring,
+            cv=cv,
+            return_train_score=False,
+            n_jobs=n_jobs,
+        )
+
+        metrics = _summarize_cv_result(cv_result)
+
+        results["models"][name] = {"metrics": metrics, "cv_result": cv_result}
 
     return results
 
