@@ -62,6 +62,7 @@ class DatasetMetadata:
     usage_restrictions: str | None = None
     consent_information: str | None = None
     privacy_status: str | None = None
+    access_status: str | None = None
 
     schema: list[DatasetFeature] | None = None
     notes: str | None = None
