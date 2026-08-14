@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from .dataset_ingestion import ingest_dataset
-from .dataset_registry import list_dataset_ids
 
 CANONICAL_FEATURES = [
     "age",
@@ -63,7 +61,9 @@ def normalize_schema(df: pd.DataFrame) -> pd.DataFrame:
     if TARGET_COLUMN not in result.columns:
         raise ValueError("Unable to normalize schema: missing target column")
 
-    ordered_columns = HARMONIZED_COLUMNS + [c for c in PROVENANCE_COLUMNS if c in result.columns]
+    ordered_columns = HARMONIZED_COLUMNS + [
+        c for c in PROVENANCE_COLUMNS if c in result.columns
+    ]
     return result.reindex(columns=ordered_columns)
 
 
@@ -79,7 +79,11 @@ def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
             result[column] = pd.to_numeric(result[column], errors="coerce")
 
     if TARGET_COLUMN in result.columns:
-        result[TARGET_COLUMN] = result[TARGET_COLUMN].astype("string").replace(list(RAW_MISSING_VALUES), pd.NA)
+        result[TARGET_COLUMN] = (
+            result[TARGET_COLUMN]
+            .astype("string")
+            .replace(list(RAW_MISSING_VALUES), pd.NA)
+        )
 
     return result
 
@@ -96,7 +100,10 @@ def build_unified_dataset() -> pd.DataFrame:
     # Only include datasets that are acquired/available for ingestion
     from .dataset_registry import list_dataset_ids_by_status
 
-    frames = [harmonize_dataset(dataset_id) for dataset_id in list_dataset_ids_by_status("ACQUIRED")]
+    frames = [
+        harmonize_dataset(dataset_id)
+        for dataset_id in list_dataset_ids_by_status("ACQUIRED")
+    ]
     return pd.concat(frames, ignore_index=True)
 
 
@@ -112,7 +119,9 @@ def detect_exact_duplicates(df: pd.DataFrame) -> pd.DataFrame:
 def detect_cross_source_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     subset = HARMONIZED_COLUMNS
     duplicates = df[df.duplicated(subset=subset, keep=False)].copy()
-    return duplicates.groupby(subset).filter(lambda group: group["source_dataset"].nunique() > 1)
+    return duplicates.groupby(subset).filter(
+        lambda group: group["source_dataset"].nunique() > 1
+    )
 
 
 def validate_harmonized_dataset(df: pd.DataFrame) -> dict[str, bool]:

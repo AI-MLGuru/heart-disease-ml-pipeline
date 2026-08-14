@@ -9,8 +9,9 @@ from .dataset_registry import DatasetMetadata
 
 
 class DatasetAcquirer(Protocol):
-    def acquire(self, metadata: DatasetMetadata, destination: Path) -> DatasetManifest:
-        ...
+    def acquire(
+        self, metadata: DatasetMetadata, destination: Path
+    ) -> DatasetManifest: ...
 
 
 class LocalFileAcquirer:
@@ -27,7 +28,9 @@ class LocalFileAcquirer:
         if target_path.suffix.lower() in {".csv", ".data"}:
             import pandas as pd
 
-            df = pd.read_csv(target_path, header=None, dtype=str, keep_default_na=False, na_values=[])
+            df = pd.read_csv(
+                target_path, header=None, dtype=str, keep_default_na=False, na_values=[]
+            )
             row_count, column_count = df.shape
 
         manifest = DatasetManifest(
@@ -41,6 +44,9 @@ class LocalFileAcquirer:
             file_size_bytes=target_path.stat().st_size,
             format=metadata.format,
             description=None,
-            additional_metadata={"source": metadata.source, "site": getattr(metadata, "site", None)},
+            additional_metadata={
+                "source": metadata.source,
+                "site": getattr(metadata, "site", None),
+            },
         )
         return manifest

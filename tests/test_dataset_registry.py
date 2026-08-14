@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from src.dataset_registry import DatasetMetadata, export_registry_json, get_dataset_metadata, list_dataset_ids
+from src.dataset_registry import (
+    DatasetMetadata,
+    export_registry_json,
+    get_dataset_metadata,
+    list_dataset_ids,
+)
 
 
 def test_dataset_registry_contains_expected_datasets():
@@ -76,5 +81,10 @@ def test_pending_dataset_excluded_from_acquired_list():
     acquired = list_dataset_ids_by_status("ACQUIRED")
     assert "ng_kano_cad_506" not in acquired
     # ensure the four UCI datasets are still acquired
-    for ds in ["uci_hd_cleveland", "uci_hd_hungarian", "uci_hd_switzerland", "uci_hd_va"]:
+    for ds in [
+        "uci_hd_cleveland",
+        "uci_hd_hungarian",
+        "uci_hd_switzerland",
+        "uci_hd_va",
+    ]:
         assert ds in acquired

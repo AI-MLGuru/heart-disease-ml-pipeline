@@ -10,7 +10,9 @@ class DatasetValidationError(Exception):
     pass
 
 
-def validate_raw_file(path: Path, expected_columns: int | None = None) -> dict[str, Any]:
+def validate_raw_file(
+    path: Path, expected_columns: int | None = None
+) -> dict[str, Any]:
     if not path.exists():
         raise DatasetValidationError(f"Raw file does not exist: {path}")
     if path.stat().st_size == 0:
@@ -18,7 +20,9 @@ def validate_raw_file(path: Path, expected_columns: int | None = None) -> dict[s
 
     if path.suffix.lower() in {".csv", ".data"}:
         try:
-            df = pd.read_csv(path, header=None, dtype=str, keep_default_na=False, na_values=[])
+            df = pd.read_csv(
+                path, header=None, dtype=str, keep_default_na=False, na_values=[]
+            )
         except Exception as exc:
             raise DatasetValidationError(f"Failed to parse file {path}: {exc}") from exc
 

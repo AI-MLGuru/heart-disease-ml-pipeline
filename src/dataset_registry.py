@@ -230,7 +230,11 @@ def list_dataset_ids_by_status(status: str | None = None) -> list[str]:
     """
     if status is None:
         return list_dataset_ids()
-    return [ds_id for ds_id, md in DATASET_REGISTRY.items() if getattr(md, "access_status", None) == status]
+    return [
+        ds_id
+        for ds_id, md in DATASET_REGISTRY.items()
+        if getattr(md, "access_status", None) == status
+    ]
 
 
 def list_datasets() -> list[DatasetMetadata]:
@@ -240,7 +244,11 @@ def list_datasets() -> list[DatasetMetadata]:
 def list_datasets_by_status(status: str | None = None) -> list[DatasetMetadata]:
     if status is None:
         return list_datasets()
-    return [md for md in DATASET_REGISTRY.values() if getattr(md, "access_status", None) == status]
+    return [
+        md
+        for md in DATASET_REGISTRY.values()
+        if getattr(md, "access_status", None) == status
+    ]
 
 
 def get_dataset_metadata(dataset_id: str) -> DatasetMetadata:
@@ -251,7 +259,10 @@ def export_registry_json(path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(
-            {dataset_id: asdict(metadata) for dataset_id, metadata in DATASET_REGISTRY.items()},
+            {
+                dataset_id: asdict(metadata)
+                for dataset_id, metadata in DATASET_REGISTRY.items()
+            },
             indent=2,
         )
     )

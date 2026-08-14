@@ -9,10 +9,7 @@ import pandas as pd
 from .dataset_harmonization import (
     CANONICAL_FEATURES,
     TARGET_COLUMN,
-    PROVENANCE_COLUMNS,
     build_unified_dataset,
-    detect_cross_source_duplicates,
-    detect_exact_duplicates,
 )
 
 NUMERICAL_FEATURES = ["age", "trestbps", "chol", "thalach", "oldpeak"]
@@ -82,7 +79,9 @@ def duplicate_summary(df: pd.DataFrame) -> dict[str, Any]:
     exact = df[exact_mask]
     exact_groups = exact.groupby(subset).size().ge(2).sum()
 
-    cross_source = exact.groupby(subset).filter(lambda group: group["source_dataset"].nunique() > 1)
+    cross_source = exact.groupby(subset).filter(
+        lambda group: group["source_dataset"].nunique() > 1
+    )
     cross_source_groups = cross_source.groupby(subset).size().ge(2).sum()
 
     return {
@@ -140,14 +139,20 @@ def source_shift_summary(df: pd.DataFrame) -> dict[str, Any]:
             if column in group.columns
         }
         categorical[source] = {
-            column: group[column].astype("string").value_counts(normalize=True, dropna=False).round(4).to_dict()
+            column: group[column]
+            .astype("string")
+            .value_counts(normalize=True, dropna=False)
+            .round(4)
+            .to_dict()
             for column in CATEGORICAL_FEATURES + BINARY_FEATURES
             if column in group.columns
         }
     return {"numerical": numeric, "categorical": categorical}
 
 
-def generate_dataset_report(df: pd.DataFrame, output_dir: Path | str | None = None) -> dict[str, Any]:
+def generate_dataset_report(
+    df: pd.DataFrame, output_dir: Path | str | None = None
+) -> dict[str, Any]:
     if output_dir is None:
         output_dir = AUDIT_OUTPUT_DIR
     output_dir = Path(output_dir)
@@ -181,45 +186,53 @@ def generate_dataset_report(df: pd.DataFrame, output_dir: Path | str | None = No
     ]
     for source, count in report["composition"]["source_counts"].items():
         md_lines.append(f"- {source}: {count}")
-    md_lines.extend([
-        "",
-        "## Target Distribution",
-        "",
-        f"Positive: {report['target_distribution']['positive']}",
-        f"Negative: {report['target_distribution']['negative']}",
-        f"Prevalence: {report['target_distribution']['prevalence']:.4f}",
-        "",
-        "## Duplicate Summary",
-        "",
-        f"Exact duplicate rows: {report['duplicate_summary']['exact_duplicate_rows']}",
-        f"Cross-source duplicate rows: {report['duplicate_summary']['cross_source_duplicate_rows']}",
-        "",
-        "## Missingness Summary",
-        "",
-    ])
+    md_lines.extend(
+        [
+            "",
+            "## Target Distribution",
+            "",
+            f"Positive: {report['target_distribution']['positive']}",
+            f"Negative: {report['target_distribution']['negative']}",
+            f"Prevalence: {report['target_distribution']['prevalence']:.4f}",
+            "",
+            "## Duplicate Summary",
+            "",
+            f"Exact duplicate rows: {report['duplicate_summary']['exact_duplicate_rows']}",
+            f"Cross-source duplicate rows: {report['duplicate_summary']['cross_source_duplicate_rows']}",
+            "",
+            "## Missingness Summary",
+            "",
+        ]
+    )
     missing_df = missingness_summary(df)
     md_lines.append(missing_df.to_markdown())
-    md_lines.extend([
-        "",
-        "## Source Missingness Summary",
-        "",
-    ])
+    md_lines.extend(
+        [
+            "",
+            "## Source Missingness Summary",
+            "",
+        ]
+    )
     source_missing_df = source_missingness_summary(df)
     md_lines.append(source_missing_df.to_markdown(index=False))
-    md_lines.extend([
-        "",
-        "## Numeric Feature Summary",
-        "",
-    ])
+    md_lines.extend(
+        [
+            "",
+            "## Numeric Feature Summary",
+            "",
+        ]
+    )
     for feature, stats in report["numeric_feature_summary"].items():
         md_lines.append(f"### {feature}")
         for metric, value in stats.items():
             md_lines.append(f"- {metric}: {value}")
         md_lines.append("")
-    md_lines.extend([
-        "## Categorical Feature Summary",
-        "",
-    ])
+    md_lines.extend(
+        [
+            "## Categorical Feature Summary",
+            "",
+        ]
+    )
     for feature, stats in report["categorical_feature_summary"].items():
         md_lines.append(f"### {feature}")
         md_lines.append(f"- missing_count: {stats['missing_count']}")

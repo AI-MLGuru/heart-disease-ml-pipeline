@@ -34,7 +34,9 @@ def train_model(data_path=None, model_path=None):
 
     model = build_pipeline(X_train)
 
-    cv_results = cross_validate_model(model, X_train, y_train, n_splits=5, random_state=42)
+    cv_results = cross_validate_model(
+        model, X_train, y_train, n_splits=5, random_state=42
+    )
 
     print("Cross-validation summary:")
     for metric, stats in cv_results["metrics"].items():
@@ -42,7 +44,9 @@ def train_model(data_path=None, model_path=None):
         std = stats["std"]
         mn = stats["min"]
         mx = stats["max"]
-        print(f"- {metric:8s}: mean={mean:.4f}  std={std:.4f}  min={mn:.4f}  max={mx:.4f}")
+        print(
+            f"- {metric:8s}: mean={mean:.4f}  std={std:.4f}  min={mn:.4f}  max={mx:.4f}"
+        )
 
     print("\nPer-fold class distributions (validation sets):")
     for i, dist in enumerate(cv_results["fold_class_distribution"], start=1):

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from pathlib import Path
-from typing import Iterable
 
 import pandas as pd
 
@@ -10,7 +8,9 @@ from .dataset_registry import get_dataset_metadata, list_dataset_ids_by_status
 
 
 def _read_csv_preserve_raw(path: Path) -> pd.DataFrame:
-    return pd.read_csv(path, header=None, dtype=str, keep_default_na=False, na_values=[])
+    return pd.read_csv(
+        path, header=None, dtype=str, keep_default_na=False, na_values=[]
+    )
 
 
 def ingest_dataset(dataset_id: str) -> pd.DataFrame:
@@ -31,5 +31,8 @@ def ingest_dataset(dataset_id: str) -> pd.DataFrame:
 
 
 def ingest_all_datasets() -> pd.DataFrame:
-    frames = [ingest_dataset(dataset_id) for dataset_id in list_dataset_ids_by_status("ACQUIRED")]
+    frames = [
+        ingest_dataset(dataset_id)
+        for dataset_id in list_dataset_ids_by_status("ACQUIRED")
+    ]
     return pd.concat(frames, ignore_index=True)

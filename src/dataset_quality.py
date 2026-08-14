@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from collections import Counter
-from pathlib import Path
 from typing import Any
 
-import pandas as pd
 
-from .dataset_registry import DatasetMetadata, list_dataset_ids_by_status, get_dataset_metadata
+from .dataset_registry import (
+    list_dataset_ids_by_status,
+    get_dataset_metadata,
+)
 from .dataset_ingestion import ingest_dataset
 
 PROVENANCE_COLUMNS = {
@@ -26,7 +27,9 @@ def dataset_audit(dataset_id: str) -> dict[str, Any]:
     data_columns = [c for c in df.columns if c not in PROVENANCE_COLUMNS]
 
     missing = df[data_columns].apply(lambda col: col.isin(["?", "-9", "", "NA"]).sum())
-    unique_values = {col: df[col].dropna().unique().tolist()[:10] for col in data_columns}
+    unique_values = {
+        col: df[col].dropna().unique().tolist()[:10] for col in data_columns
+    }
     target_column_name = data_columns[-1]
     target_values = Counter(df[target_column_name].dropna().tolist())
 
@@ -48,4 +51,7 @@ def dataset_audit(dataset_id: str) -> dict[str, Any]:
 
 def audit_all_datasets(status: str = "ACQUIRED") -> dict[str, dict[str, Any]]:
     """Audit datasets filtered by access status (defaults to ACQUIRED)."""
-    return {dataset_id: dataset_audit(dataset_id) for dataset_id in list_dataset_ids_by_status(status)}
+    return {
+        dataset_id: dataset_audit(dataset_id)
+        for dataset_id in list_dataset_ids_by_status(status)
+    }

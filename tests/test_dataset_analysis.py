@@ -5,8 +5,6 @@ from pathlib import Path
 import pandas as pd
 
 from src.dataset_analysis import (
-    BINARY_FEATURES,
-    CATEGORICAL_FEATURES,
     composition_summary,
     duplicate_summary,
     generate_dataset_report,

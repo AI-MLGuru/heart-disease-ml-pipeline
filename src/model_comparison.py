@@ -3,18 +3,14 @@
 Produces cross-validated summaries using the existing `cross_validate_model` helper.
 """
 
-from pathlib import Path
 
 import numpy as np
 
-from .preprocess import load_data, split_features_target, build_preprocessor
+from .preprocess import build_preprocessor
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_validate
 from sklearn.pipeline import Pipeline
-import numpy as np
-
-
 
 DEFAULT_SCORING = {
     "accuracy": "accuracy",
@@ -62,7 +58,9 @@ def compare_models(
     if models is None:
         models = {
             "Logistic Regression": LogisticRegression(max_iter=1000),
-            "Random Forest": RandomForestClassifier(n_estimators=100, random_state=random_state),
+            "Random Forest": RandomForestClassifier(
+                n_estimators=100, random_state=random_state
+            ),
             "Gradient Boosting": GradientBoostingClassifier(random_state=random_state),
         }
 
@@ -76,7 +74,11 @@ def compare_models(
         dist = {int(k): int(v) for k, v in zip(unique.tolist(), counts.tolist())}
         fold_distributions.append(dist)
 
-    results: dict = {"n_splits": n_splits, "fold_class_distribution": fold_distributions, "models": {}}
+    results: dict = {
+        "n_splits": n_splits,
+        "fold_class_distribution": fold_distributions,
+        "models": {},
+    }
 
     for name, estimator in models.items():
         # compose preprocessor + estimator so preprocessing is identical
@@ -98,6 +100,27 @@ def compare_models(
         results["models"][name] = {"metrics": metrics, "cv_result": cv_result}
 
     return results
+
+
+def print_comparison_report(results: dict) -> None:
+    """Pretty-print a compact comparison table of mean±std for each metric."""
+    models = results.get("models", {})
+    if not models:
+        print("No models to report")
+        return
+
+    metric_names = list(next(iter(models.values()))["metrics"].keys())
+
+    header = "Model".ljust(20) + "  " + "  ".join([m.ljust(20) for m in metric_names])
+    print(header)
+    print("-" * len(header))
+
+    for name, info in models.items():
+        row = name.ljust(20) + "  "
+        for m in metric_names:
+            stat = info["metrics"][m]
+            row += f"{stat['mean']:.3f}±{stat['std']:.3f}".ljust(20) + "  "
+        print(row)
 
 
 def print_results(results):
