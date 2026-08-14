@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from .dataset_registry import get_dataset_metadata, list_dataset_ids_by_status
+from .dataset_registry import get_dataset_metadata, list_dataset_ids_for_processing
 
 
 def _read_csv_preserve_raw(path: Path) -> pd.DataFrame:
@@ -33,6 +33,6 @@ def ingest_dataset(dataset_id: str) -> pd.DataFrame:
 def ingest_all_datasets() -> pd.DataFrame:
     frames = [
         ingest_dataset(dataset_id)
-        for dataset_id in list_dataset_ids_by_status("ACQUIRED")
+        for dataset_id in list_dataset_ids_for_processing()
     ]
     return pd.concat(frames, ignore_index=True)

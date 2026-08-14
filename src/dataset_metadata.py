@@ -62,6 +62,9 @@ class DatasetMetadata:
     consent_information: str | None = None
     privacy_status: str | None = None
     access_status: str | None = None
+    # processing_status tracks where the dataset is in the pipeline lifecycle.
+    # Allowed values: NOT_STARTED, VALIDATED, AUDITED, HARMONIZED, READY
+    processing_status: str = "NOT_STARTED"
 
     schema: list[DatasetFeature] | None = None
     notes: str | None = None

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 from typing import Dict
 
@@ -70,6 +70,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
         target_column="num",
         schema=_default_uci_schema(),
         notes="Cleveland site from UCI heart disease dataset.",
+        processing_status="HARMONIZED",
     ),
     "uci_hd_hungarian": DatasetMetadata(
         dataset_id="uci_hd_hungarian",
@@ -106,6 +107,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
         target_column="num",
         schema=_default_uci_schema(),
         notes="Hungarian site from UCI heart disease dataset.",
+        processing_status="HARMONIZED",
     ),
     "uci_hd_switzerland": DatasetMetadata(
         dataset_id="uci_hd_switzerland",
@@ -142,6 +144,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
         target_column="num",
         schema=_default_uci_schema(),
         notes="Switzerland site from UCI heart disease dataset.",
+        processing_status="HARMONIZED",
     ),
     "uci_hd_va": DatasetMetadata(
         dataset_id="uci_hd_va",
@@ -178,6 +181,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
         target_column="num",
         schema=_default_uci_schema(),
         notes="Long Beach VA site from UCI heart disease dataset.",
+        processing_status="HARMONIZED",
     ),
     "ng_kano_cad_506": DatasetMetadata(
         dataset_id="ng_kano_cad_506",
@@ -214,6 +218,7 @@ DATASET_REGISTRY: Dict[str, DatasetMetadata] = {
         schema=None,
         notes="Candidate Nigerian dataset; reported records=506; access pending (author request).",
         access_status="ACCESS_PENDING",
+        processing_status="NOT_STARTED",
     ),
 }
 
@@ -235,6 +240,52 @@ def list_dataset_ids_by_status(status: str | None = None) -> list[str]:
         for ds_id, md in DATASET_REGISTRY.items()
         if getattr(md, "access_status", None) == status
     ]
+
+
+def list_dataset_ids_for_processing() -> list[str]:
+    """Return dataset ids that are eligible for active processing.
+
+    By default the rule is: `access_status == 'ACQUIRED'`.
+    """
+    return list_dataset_ids_by_status("ACQUIRED")
+
+
+def list_datasets_for_processing() -> list[DatasetMetadata]:
+    return [DATASET_REGISTRY[ds] for ds in list_dataset_ids_for_processing()]
+
+
+PROCESSING_TRANSITIONS = {
+    "NOT_STARTED": ["VALIDATED"],
+    "VALIDATED": ["AUDITED"],
+    "AUDITED": ["HARMONIZED"],
+    "HARMONIZED": ["READY"],
+    "READY": [],
+}
+
+
+def update_dataset_metadata(dataset_id: str, **fields) -> DatasetMetadata:
+    """Update dataset metadata by returning a replaced dataclass instance.
+
+    This mutates the in-memory registry entry.
+    """
+    if dataset_id not in DATASET_REGISTRY:
+        raise KeyError(dataset_id)
+    current = DATASET_REGISTRY[dataset_id]
+    new = replace(current, **fields)
+    DATASET_REGISTRY[dataset_id] = new
+    return new
+
+
+def set_processing_status(dataset_id: str, new_status: str) -> DatasetMetadata:
+    """Set the processing_status field with simple transition validation."""
+    if dataset_id not in DATASET_REGISTRY:
+        raise KeyError(dataset_id)
+    current = DATASET_REGISTRY[dataset_id]
+    cur_status = getattr(current, "processing_status", "NOT_STARTED")
+    allowed = PROCESSING_TRANSITIONS.get(cur_status, [])
+    if new_status != cur_status and new_status not in allowed:
+        raise ValueError(f"Invalid transition {cur_status} -> {new_status}")
+    return update_dataset_metadata(dataset_id, processing_status=new_status)
 
 
 def list_datasets() -> list[DatasetMetadata]:

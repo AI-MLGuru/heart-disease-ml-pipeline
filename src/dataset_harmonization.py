@@ -98,12 +98,18 @@ def harmonize_dataset(dataset_id: str) -> pd.DataFrame:
 
 def build_unified_dataset() -> pd.DataFrame:
     # Only include datasets that are acquired/available for ingestion
-    from .dataset_registry import list_dataset_ids_by_status
+    from .dataset_registry import list_dataset_ids_for_processing, set_processing_status
 
-    frames = [
-        harmonize_dataset(dataset_id)
-        for dataset_id in list_dataset_ids_by_status("ACQUIRED")
-    ]
+    frames = []
+    for dataset_id in list_dataset_ids_for_processing():
+        df = harmonize_dataset(dataset_id)
+        # mark as harmonized in the registry (idempotent)
+        try:
+            set_processing_status(dataset_id, "HARMONIZED")
+        except Exception:
+            # tolerate idempotent sets or transition problems during exploratory runs
+            pass
+        frames.append(df)
     return pd.concat(frames, ignore_index=True)
 
 

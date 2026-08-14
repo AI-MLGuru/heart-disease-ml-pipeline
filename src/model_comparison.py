@@ -7,6 +7,7 @@ Produces cross-validated summaries using the existing `cross_validate_model` hel
 import numpy as np
 
 from .preprocess import build_preprocessor
+from sklearn.base import clone
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_validate
@@ -45,7 +46,7 @@ def compare_models(
     n_splits: int = 5,
     random_state: int = 42,
     scoring: dict | None = None,
-    n_jobs: int = 1,
+    n_jobs: int = -1,
 ):
     """Compare multiple estimators using the same StratifiedKFold splits.
 
@@ -80,9 +81,12 @@ def compare_models(
         "models": {},
     }
 
+    # Build a canonical preprocessor definition (columns, transformers).
+    preprocessor_template = build_preprocessor(X)
+
     for name, estimator in models.items():
-        # compose preprocessor + estimator so preprocessing is identical
-        preprocessor = build_preprocessor(X)
+        # clone the preprocessor for each pipeline so fits don't share state
+        preprocessor = clone(preprocessor_template)
         pipe = Pipeline([("preprocessor", preprocessor), ("classifier", estimator)])
 
         cv_result = cross_validate(
