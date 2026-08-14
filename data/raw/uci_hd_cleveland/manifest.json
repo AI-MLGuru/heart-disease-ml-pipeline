@@ -1,0 +1,16 @@
+{
+  "dataset_id": "uci_hd_cleveland",
+  "version": "1.0",
+  "source_file": "processed.cleveland.data",
+  "acquired_at": "2026-08-14T10:45:52.642734Z",
+  "sha256": "a74b7efa387bc9d108d7d0115d831fe9b414b29ae7124f331b622b4efa0427c8",
+  "row_count": 303,
+  "column_count": 14,
+  "file_size_bytes": 18461,
+  "format": "csv",
+  "description": null,
+  "additional_metadata": {
+    "source": "UCI Machine Learning Repository",
+    "site": "Cleveland Clinic Foundation"
+  }
+}

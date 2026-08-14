@@ -50,3 +50,81 @@ class LocalFileAcquirer:
             },
         )
         return manifest
+
+
+def acquire_dataset_to_raw(
+    dataset_metadata: DatasetMetadata,
+    destination_root: Path | None = None,
+    acquirer: DatasetAcquirer | None = None,
+    update_registry: bool = False,
+):
+    """Acquire a dataset using the provided acquirer (default: LocalFileAcquirer).
+
+    Writes the raw file into `destination_root / dataset_id/` and writes a JSON
+    manifest alongside the file. If `update_registry` is True, the function will
+    set `access_status='ACQUIRED'` and `processing_status='VALIDATED'` in the
+    registry (uses `dataset_registry.update_dataset_metadata`).
+    """
+    from pathlib import Path
+
+    if destination_root is None:
+        destination_root = Path(__file__).resolve().parents[1] / "data" / "raw"
+
+    if acquirer is None:
+        acquirer = LocalFileAcquirer()
+
+    dest = Path(destination_root) / dataset_metadata.dataset_id
+    manifest = acquirer.acquire(dataset_metadata, dest)
+
+    manifest_path = Path(dest) / "manifest.json"
+    manifest.write_json(manifest_path)
+
+    if update_registry:
+        try:
+            # lazy import to avoid cycles
+            from .dataset_registry import update_dataset_metadata
+
+            update_dataset_metadata(
+                dataset_metadata.dataset_id,
+                access_status="ACQUIRED",
+                source_file=str((Path("data") / "raw" / dataset_metadata.dataset_id / manifest.source_file)),
+                processing_status="VALIDATED",
+            )
+        except Exception:
+            # don't fail acquisition if registry update isn't possible in this environment
+            pass
+
+    return manifest_path
+
+
+def validate_manifest(manifest_path: Path) -> bool:
+    """Validate a saved manifest.json by recomputing sha256 and checking row/col counts.
+
+    Returns True if manifest is valid, False otherwise.
+    """
+    import json
+
+    from .dataset_manifest import compute_file_sha256
+
+    manifest_path = Path(manifest_path)
+    if not manifest_path.exists():
+        return False
+    payload = json.loads(manifest_path.read_text())
+    base = manifest_path.parent
+    file_rel = payload.get("source_file")
+    target = base / file_rel
+    if not target.exists():
+        return False
+    sha = compute_file_sha256(target)
+    if sha != payload.get("sha256"):
+        return False
+
+    # optional checks for csv/delimited
+    if target.suffix.lower() in {".csv", ".data"}:
+        import pandas as pd
+
+        df = pd.read_csv(target, header=None, dtype=str, keep_default_na=False, na_values=[])
+        if df.shape[0] != payload.get("row_count") or df.shape[1] != payload.get("column_count"):
+            return False
+
+    return True
